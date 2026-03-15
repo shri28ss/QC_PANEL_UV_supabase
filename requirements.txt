@@ -1,7 +1,0 @@
-mysql-connector-python
-python-dotenv
-pdfplumber
-pydantic
-ollama
-fastapi
-uvicorn

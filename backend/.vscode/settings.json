@@ -1,0 +1,8 @@
+{
+    "python.defaultInterpreterPath": "c:\\Users\\SHREE\\UV_AI\\LEDGER_AI\\backend\\venv\\Scripts\\python.exe",
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.analysis.extraPaths": [
+        "c:\\Users\\SHREE\\UV_AI\\LEDGER_AI\\backend",
+        "c:\\Users\\SHREE\\UV_AI\\LEDGER_AI\\backend\\venv\\Lib\\site-packages"
+    ]
+}
