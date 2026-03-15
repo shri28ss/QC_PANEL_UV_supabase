@@ -1,58 +1,84 @@
-# LEDGER AI - QC Panel Documentation
+# Ledger AI - The Bank Statement Reader 🤖🧾
 
 ## Overview
-The Quality Control (QC) Panel is the core engine within Ledger AI designed to automatically and manually evaluate the accuracy of data extracted from financial documents (like bank statements). It focuses on comparing the output from two different extraction methods:
-1. **LLM Extraction Baseline:** The raw data extracted by the Large Language Model.
-2. **Generated Code Extraction:** The data extracted using the Python parsing logic that the LLM iteratively codes and refines.
+Ledger AI is an intelligent system that reads your bank PDF statements and automatically pulls out all the transactions using AI (Language Models). We use a special **Quality Control (QC) Panel** to catch any mistakes the AI makes, and we teach it to write Python code to be mathematically perfect!
 
-By comparing these two sources, the QC panel highlights discrepancies, enables user corrections, and feeds context back to the LLM to improve its code generation capabilities—creating an auto-improving data extraction loop.
-
----
-
-## Key Features & Workflow
-
-### 1. Dual Extraction Comparison
-The QC Panel presents a side-by-side or combined view of transactions extracted via the Baseline LLM vs. the Generated Python Code. 
-When differences are detected (e.g., missing transactions, wrong dates, incorrect amounts), the UI flags them so a human reviewer can step in.
-
-### 2. Accuracy Scoring
-An accuracy score is calculated based on how closely the Code Extraction matches the LLM Baseline. 
-- The system is extremely strict: typically, a **99% or 100% accuracy** score is required before code is considered stable.
-- If the score falls below the threshold, the code is flagged for improvement.
-
-### 3. Dynamic Code Improvement
-When a discrepancy occurs, the user can provide **QC Remarks** (e.g., "The code is missing the closing balance transaction" or "Date format is DD/MM/YYYY").
-- The system packages the generated code, the LLM baseline data, the current code output, and the user's remarks.
-- This package is sent back to the LLM to dynamically generate **improved Python code**. 
-
-### 4. Overriding the Source of Truth
-Neither the LLM nor the Code is strictly treated as the absolute "Source of Truth," as both can make mistakes.
-- **Override LLM Baseline:** If the Python code correctly extracted the data but the LLM hallucinated or missed rows, the user can click "Override LLM Baseline." This replaces the flawed LLM baseline with the accurate code output, boosting the accuracy score to 100% and stabilizing the parser.
-
-### 5. Saving the Parser Code
-- **Save Code:** Once the code achieves the required accuracy threshold, the user can save the code. This parser is then locked in for this specific bank/statement type.
-- **Force Save Code:** In edge cases where the core logic is correct but minor discrepancies persist, administrative users have the option to force-save the current iteration of the code.
-
-### 6. Document Status & Prevention of Re-QC
-Once a document is successfully processed and approved through the QC panel, its status is updated to **`REVIEWED`**. 
-The system's background `random_qc_service` is explicitly configured to exclude `REVIEWED` documents, ensuring that already-processed documents are not repeatedly pulled back into the QC queue, saving processing power and API quotas.
+This app is built with:
+1. **Frontend:** A beautiful website interface (React/Vite).
+2. **Backend API:** The core engine that talks to our database (Python FastAPI).
+3. **Database:** MariaDB/MySQL to store files and data.
 
 ---
 
-## The Feedback Loop
+## 🛠️ Local Installation & Setup
 
-1. **Upload:** Document is uploaded and identified (Bank Name, Password status).
-2. **Baseline:** The LLM attempts a zero-shot extraction (Baseline).
-3. **First Pass Code:** The LLM writes a Python script to parse the PDF.
-4. **Execution:** The Python script runs against the PDF.
-5. **QC Comparison:** The system compares the Baseline vs. Script Output.
-6. **Human Intervention:** The reviewer assesses discrepancies via the QC Panel.
-7. **Refinement:** The user adds remarks -> The LLM refines the code -> The script runs again.
-8. **Finalization:** Accuracy reaches 100% (or LLM Baseline is successfully overridden) -> Code is Saved -> Document marked as `REVIEWED`.
+1. **Database Setup**
+   Make sure you have MySQL or XAMPP running. Our database structure is stored in `backend/db/full_schema.sql`. You can dump that file into your database client.
+
+2. **Backend Setup (Python)**
+   Open a terminal, go into the backend folder, and install the rules:
+   ```bash
+   cd backend
+   .\venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+3. **Frontend Setup (React/Node)**
+   Open a new terminal, go to the frontend, and download the web building blocks:
+   ```bash
+   cd frontend
+   npm install
+   ```
 
 ---
 
-## Best Practices for Reviewers
-- Always verify the PDF visually if the LLM and Code are in total disagreement.
-- Write specific, targeted QC Remarks for the LLM. Example: "Ignore footer text on pages 3 and 4" rather than "Code is wrong."
-- Use "Override LLM Baseline" *only* when you are absolutely certain the Python script's output perfectly matches the original PDF.
+## 🚀 How to Run the App Like a Pro!
+You don't need to type out all the commands every time. We added a magic script just for you! 
+
+**If you are on Windows:**
+Just double-click the **`start.bat`** file in your project folder! 
+This will automatically open two black windows (one for the Backend API and one for the Website). **Keep both windows open!** 
+
+*(If you ever stop the app, just close those black terminal windows).*
+
+---
+
+## 🕵️‍♂️ The QC Panel: A Guide for Beginners 
+
+The **Quality Control (QC) Panel** is where you act as the teacher for the AI. You make sure the AI extracted the row data correctly. 
+
+### What are we comparing?
+When a PDF is uploaded, two things try to read it:
+1. **The LLM (Baseline):** A smart AI tries to guess where the transactions are. Sometimes it hallucinates or guesses wrong!
+2. **The Code Parser:** The AI wrote a Python script to do the math. 
+
+We compare the guesses with the script to catch errors. To become permanent, the script MUST score **99% or 100% Accuracy**.
+
+### Step-by-Step: How to Use the QC Panel
+
+Here is exactly what you do when you open the QC Panel:
+
+👉 **Step 1: Upload a PDF**
+Click the **Upload** button and select your bank statement PDF. Tell the app what bank it is. Wait for the AI to process it.
+
+👉 **Step 2: Go to the "Review Documents" Page**
+Look at the list of pending documents. Click on **"Review"** for any document that has a low score or a yellow/red warning.
+
+👉 **Step 3: Spot the Mistakes (Red & Yellow boxes)**
+On the left side of the screen, you will see what the Code found. On the right side, you will see what the LLM found.
+- If a row is missing on one side, it will be highlighted in **Red**.
+- If the date, amount, or description doesn't perfectly match, it will be highlighted in **Yellow**.
+
+👉 **Step 4: Fix It! (Two Options)**
+
+**Option A: Add Remarks to Improve the Code (If the Code is Wrong!)**
+If the Code missed a transaction, type exactly what is wrong in the "Add QC Remarks" box. 
+*(Example: "You missed the opening balance transaction on page 1")*
+Then click **"Improve & Re-run Code"**. The AI will learn from your comment, rewrite its Python script, and try again!
+
+**Option B: Override the LLM (If the Code is Perfect but LLM is stupid!)**
+Sometimes the LLM hallucinates fake transactions, but the left side Code got it perfectly right. 
+Click the **"Override LLM Baseline"** button. This tells the computer: *"Trust the Code, delete the stupid LLM guess, and lock the score at 100%."*
+
+👉 **Step 5: Save & Finish!**
+Once the accuracy hits 100%, the big **"Save Code"** button will turn green. Click it! The document is now marked as **REVIEWED** and the AI has learned the format forever!
