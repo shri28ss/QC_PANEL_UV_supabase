@@ -13,7 +13,7 @@ from repository.statement_category_repo import (
 
 import google.generativeai as genai
 
-API_KEY = "AIzaSyDBobAsT9CHEtowGwAaeL697wb4xhd-SIY"
+API_KEY = os.environ.get("GEMINI_API_KEY")
 MODEL_NAME= "models/gemini-2.5-flash"
 genai.configure(api_key=API_KEY)
 
