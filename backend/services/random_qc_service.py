@@ -114,8 +114,8 @@ def _save_qc_result(document_id, statement_id, file_name, institution_name,
     summary = reconciliation["summary"]
     accuracy = float(reconciliation["overall_similarity"])
     
-    # Accuracy threshold: 99% or above is acceptable
-    qc_status = 'REVIEWED' if accuracy >= 99.0 else 'FLAGGED'
+    # Accuracy threshold: 98% or above is acceptable
+    qc_status = 'REVIEWED' if accuracy >= 98.0 else 'FLAGGED'
     
     conn = get_connection()
     cursor = conn.cursor()

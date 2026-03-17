@@ -10,7 +10,7 @@ import ast
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
-API_KEY = "AIzaSyBfdKSpLkGAx_1WOnlC-8mhn_SchDlULdg"
+API_KEY = "AIzaSyDBobAsT9CHEtowGwAaeL697wb4xhd-SIY"
 MODEL_NAME = "models/gemini-2.5-flash" # Verified SUCCESS model
 genai.configure(api_key=API_KEY)
 
@@ -85,12 +85,20 @@ def build_improvement_prompt(
     trust_all_matches = remarks.get("global_trust_all_matches", "")
     
     # 1. Matched rows: INCLUDE ALL. Tag as perfect match or mismatch.
+    perfect_matches_included = 0
     for i, (pair, flags) in enumerate(zip(matched, field_flags)):
         remark_code = remarks.get(f"matched_code_{i}", "")
         remark_llm = remarks.get(f"matched_llm_{i}", "")
         remark = remark_code or remark_llm
         
         flag_str = ", ".join(flags.keys()) if flags else "none"
+
+        # If it's a perfect match with no remarks, we can skip most of them to save context length
+        if not remark and not flags:
+            if perfect_matches_included < 2:
+                perfect_matches_included += 1
+            else:
+                continue  # Skip the rest of perfect matches to reduce input size
 
         line = (
             f"MATCHED ROW {i+1}:\n"
@@ -99,7 +107,7 @@ def build_improvement_prompt(
         )
         
         if not remark and not flags:
-            line += f"  STATUS: PERFECT MATCH (Keep this logic)\n"
+            line += f"  STATUS: PERFECT MATCH (ALREADY WORKING. KEEP THIS LOGIC INTACT, DO NOT BREAK IT!)\n"
         else:
             line += f"  STATUS: MISMATCH (Auto-flagged differences: {flag_str})\n"
             if remark:
@@ -175,13 +183,7 @@ CURRENT FUNCTION:
 {current_code}
 =========================================
 
-CODE OUTPUT (All transactions extracted by current code):
-{json.dumps(code_transactions, indent=2)}
-
-REFERENCE TRUTH (All transactions correctly extracted by LLM):
-{json.dumps(llm_transactions, indent=2)}
-
-USER FEEDBACK & REMARKS (Instructions to fix):
+TARGETED FEEDBACK & DISCREPANCIES (Focus your changes to fix these issues):
 {feedback_block}
 
 SYSTEMIC PATTERNS (Format-wide corrections):
@@ -202,6 +204,9 @@ You MUST MODIFY the code to handle these edge cases. You are allowed to:
 - Add new condition checks or keywords.
 - Reformulate the loop logic (e.g. handle multi-line transactions differently).
 - Improve the column positioning or balance delta logic.
+
+*** IMPORTANT REGRESSION RULE ***:
+While fixing the mismatched rows, you MUST ensure that your changes DO NOT break the logic for other standard transactions that were already being extracted correctly. Any rows labeled "PERFECT MATCH" are examples of existing logic that is working properly. Do not break them!
 
 GUIDELINES FOR YOUR NEW CODE:
 1. Setup:

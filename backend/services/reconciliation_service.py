@@ -6,10 +6,11 @@ Both are compared symmetrically with field-level mismatch flags.
 """
 import re
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple, Union
 from rapidfuzz import fuzz
 
 
-def normalize_date(date_str: str) -> str:
+def normalize_date(date_str: Any) -> str:
     """Normalize date string to YYYY-MM-DD."""
     if not date_str or not isinstance(date_str, str):
         return ""
@@ -38,12 +39,14 @@ def normalize_amount(val) -> float:
         # Handle string amounts with commas
         if isinstance(val, str):
             val = val.replace(",", "")
-        return round(float(val), 2)
+        # Use a more explicit rounding to satisfy strict type checkers
+        f_val = float(val)
+        return float(f"{f_val:.2f}")
     except (ValueError, TypeError):
         return 0.0
 
 
-def get_effective_amount(txn: dict) -> float:
+def get_effective_amount(txn: Dict[str, Any]) -> float:
     """Get a signed effective amount: positive for credit, negative for debit."""
     credit = normalize_amount(txn.get("credit"))
     debit = normalize_amount(txn.get("debit"))
@@ -61,7 +64,7 @@ def normalize_details(details: str) -> str:
     return re.sub(r"\s+", " ", details.lower().strip())
 
 
-def _prepare(txn: dict, idx: int, source: str) -> dict:
+def _prepare(txn: Dict[str, Any], idx: int, source: str) -> Dict[str, Any]:
     """Prepare a single transaction for matching."""
     norm_date = normalize_date(txn.get("date", ""))
     eff_amount = get_effective_amount(txn)
@@ -78,11 +81,11 @@ def _prepare(txn: dict, idx: int, source: str) -> dict:
     }
 
 
-def _compute_score(a: dict, b: dict) -> tuple:
+def _compute_score(a: Dict[str, Any], b: Dict[str, Any]) -> Tuple[float, Dict[str, bool], float]:
     """
     Compute weighted similarity score between two prepared transactions.
     score = 0.5 * amount_match + 0.3 * date_match + 0.2 * desc_similarity
-    Returns (score, field_flags dict)
+    Returns (score, field_flags dict, desc_ratio)
     """
     # Amount match (exact after normalization)
     amount_match = 1.0 if a["eff_amount"] == b["eff_amount"] else 0.0
@@ -92,7 +95,7 @@ def _compute_score(a: dict, b: dict) -> tuple:
 
     # Description similarity via RapidFuzz
     if a["norm_desc"] and b["norm_desc"]:
-        desc_ratio = fuzz.token_sort_ratio(a["norm_desc"], b["norm_desc"]) / 100.0
+        desc_ratio = float(fuzz.token_sort_ratio(a["norm_desc"], b["norm_desc"])) / 100.0
     elif not a["norm_desc"] and not b["norm_desc"]:
         desc_ratio = 1.0  # both empty
     else:
@@ -101,7 +104,7 @@ def _compute_score(a: dict, b: dict) -> tuple:
     score = 0.5 * amount_match + 0.3 * date_match + 0.2 * desc_ratio
 
     # Field-level flags
-    flags = {}
+    flags: Dict[str, bool] = {}
     if amount_match < 1.0:
         flags["amount_mismatch"] = True
     if date_match < 1.0:
@@ -112,7 +115,7 @@ def _compute_score(a: dict, b: dict) -> tuple:
     return score, flags, desc_ratio
 
 
-def reconcile_transactions(code_txns: list, llm_txns: list) -> dict:
+def reconcile_transactions(code_txns: List[Dict[str, Any]], llm_txns: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Symmetric order-independent reconciliation.
 
@@ -128,15 +131,15 @@ def reconcile_transactions(code_txns: list, llm_txns: list) -> dict:
     # Build candidate pairs with scores
     # For each (code, llm) combination, compute score only if they share
     # either a primary key or a fallback (amount-only) key.
-    candidate_pairs = []
+    candidate_pairs: List[Tuple[float, Dict[str, bool], float, Dict[str, Any], Dict[str, Any]]] = []
 
     # Primary: group code transactions by (date, amount)
-    code_by_primary = {}
+    code_by_primary: Dict[Tuple[str, float], List[Dict[str, Any]]] = {}
     for cp in code_prepared:
         code_by_primary.setdefault(cp["primary_key"], []).append(cp)
 
     # Fallback: group code transactions by amount only
-    code_by_amount = {}
+    code_by_amount: Dict[float, List[Dict[str, Any]]] = {}
     for cp in code_prepared:
         code_by_amount.setdefault(cp["eff_amount"], []).append(cp)
 
@@ -158,6 +161,7 @@ def reconcile_transactions(code_txns: list, llm_txns: list) -> dict:
 
         for cp in fallback_candidates:
             if id(cp) not in seen:
+                # Type hint for the checker
                 score, flags, desc_ratio = _compute_score(cp, lp)
                 candidate_pairs.append((score, flags, desc_ratio, cp, lp))
                 seen.add(id(cp))
@@ -182,8 +186,8 @@ def reconcile_transactions(code_txns: list, llm_txns: list) -> dict:
         matched_pairs.append({
             "code": cp["original"],
             "llm": lp["original"],
-            "score": round(score, 3),
-            "desc_similarity": round(desc_ratio * 100, 1),
+            "score": float(f"{score:.3f}"),
+            "desc_similarity": float(f"{(desc_ratio * 100):.1f}"),
         })
         field_flags.append(flags)
 
@@ -200,7 +204,7 @@ def reconcile_transactions(code_txns: list, llm_txns: list) -> dict:
     sum_scores = sum(p["score"] for p in matched_pairs)
 
     # Overall = (sum of matched scores) / max(total_code, total_llm) * 100
-    overall_similarity = round((sum_scores / total_txns) * 100, 1)
+    overall_similarity = float(f"{(sum_scores / total_txns * 100):.1f}")
 
     return {
         "matched_pairs": matched_pairs,

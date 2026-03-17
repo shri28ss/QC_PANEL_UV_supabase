@@ -208,6 +208,8 @@ export default function ReviewDocument() {
         setIsGenerating(true);
         setImprovedCode('');
         setRunResult(null);
+        setSaveStatus('idle');
+        setForceSaveStatus('idle');
         try {
             // Build accepted info into remarks so the LLM understands them
             const enrichedRemarks = prepareRemarksForBackend(remarks);
@@ -293,7 +295,7 @@ export default function ReviewDocument() {
             await axios.post(`http://localhost:8000/api/save-improved-code/${selectedDocId}`, {
                 improved_code: improvedCode,
                 overwrite_llm: overwriteLlm,
-                accuracy: overwriteLlm ? 100 : (runResult?.reconciliation?.summary?.overall_similarity || null),
+                accuracy: overwriteLlm ? 100 : (runResult?.reconciliation?.overall_similarity || null),
             });
             setSaveStatus('saved');
 
@@ -302,7 +304,7 @@ export default function ReviewDocument() {
             setLogicData(logicRes.data);
 
             // Update the format_status, accuracy, and QC flag in the local documents list
-            const savedAccuracy = overwriteLlm ? 100 : (runResult?.reconciliation?.summary?.overall_similarity || logicRes.data?.reconciliation?.overall_similarity || null);
+            const savedAccuracy = overwriteLlm ? 100 : (runResult?.reconciliation?.overall_similarity || logicRes.data?.reconciliation?.overall_similarity || null);
             setDocuments(prev => prev.map(doc =>
                 doc.document_id === selectedDocId
                     ? { ...doc, format_status: 'ACTIVE', last_qc_accuracy: savedAccuracy, is_auto_flagged: 0 }

@@ -7,6 +7,7 @@ import pikepdf
 import tempfile
 import os
 import logging
+from typing import Dict, Any, List, Optional, Union
 
 # Configure logging so scheduler & QC logs appear in terminal
 logging.basicConfig(
@@ -387,9 +388,9 @@ def save_improved_code(document_id: int, req: SaveImprovedCodeRequest):
         """, (req.improved_code, statement_id))
 
     # Also clear any FLAGGED QC results for this format since we just fixed the logic
+    # Deleting them ensures Random QC will test these documents again in its next run
     cursor.execute("""
-        UPDATE random_qc_results 
-        SET qc_status = 'REVIEWED', reviewer_notes = 'Auto-resolved: Logic improved in Review Document'
+        DELETE FROM random_qc_results 
         WHERE statement_id = %s AND qc_status = 'FLAGGED'
     """, (statement_id,))
 
@@ -932,7 +933,7 @@ def get_frequent_overrides():
     conn.close()
 
     # Dictionary to group overrides by document_id
-    docs_map: dict = {}
+    docs_map: Dict[int, Dict[str, Any]] = {}
 
     for row in rows:
         doc_id = row["document_id"]
@@ -957,18 +958,21 @@ def get_frequent_overrides():
             txns = row["transaction_json"]
         
         # Try to find the exact original transaction in the array
-        original_txn = None
+        original_txn: Optional[Dict[str, Any]] = None
         for t in txns:
+            if not isinstance(t, dict):
+                continue
             if str(t.get(row["field_name"], "")) == str(row["ai_value"] or ""):
-                original_txn = dict(t)  # copy so we don't mutate
+                original_txn = t.copy()  # copy so we don't mutate
                 break
         
         if not original_txn:
+            # Provide a fallback dict for type safety
             original_txn = {"date": "N/A", "details": "Could not locate original row", "debit": "-", "credit": "-", "balance": "-"}
 
         # Build the corrected version by applying the user's fix
-        corrected_txn = dict(original_txn)
-        corrected_txn[row["field_name"]] = row["user_value"]
+        corrected_txn: Dict[str, Any] = {**original_txn}
+        corrected_txn[str(row["field_name"])] = row["user_value"]
 
         override_obj = {
             "override_id": row["override_id"],
@@ -980,8 +984,10 @@ def get_frequent_overrides():
             "corrected_transaction": corrected_txn
         }
 
-        docs_map[doc_id]["overrides"].append(override_obj)
-        docs_map[doc_id]["total_changes"] += 1
+        doc_data = docs_map[doc_id]
+        overrides_list: List[Any] = doc_data["overrides"]
+        overrides_list.append(override_obj)
+        doc_data["total_changes"] += 1
 
     # Convert map to list & sort by total_changes descending
     results = list(docs_map.values())
