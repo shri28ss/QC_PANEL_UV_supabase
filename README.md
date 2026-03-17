@@ -15,12 +15,16 @@ This app is built with:
 1. **Database Setup**
    Make sure you have MySQL or XAMPP running. Our database structure is stored in `backend/db/full_schema.sql`. You can dump that file into your database client to create the empty tables.
 
-2. **Backend Setup (Python)**
-   Open a terminal, go into the backend folder, and install the rules:
    ```bash
    cd backend
    .\venv\Scripts\activate
    pip install -r requirements.txt
+   ```
+
+   **Setting up the API Key:**
+   You must provide an API key for the AI to work. Create a file named `.env` inside the `backend` folder and add your Gemini API key like this:
+   ```env
+   GEMINI_API_KEY="your-api-key-here"
    ```
 
 3. **Frontend Setup (React/Node)**
