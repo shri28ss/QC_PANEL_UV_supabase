@@ -1,3 +1,11 @@
+
+import json
+def safe_json_loads(data):
+    if isinstance(data, (dict, list)): return data
+    if isinstance(data, str):
+        try: return safe_json_loads(data)
+        except: return None
+    return data
 import re
 import json
 import os
@@ -145,7 +153,7 @@ def find_existing_identifier(text: str, threshold: float = 80.0):
         identifier_json = cat.get("statement_identifier")
 
         if isinstance(identifier_json, str):
-            identifier_json = json.loads(identifier_json)
+            identifier_json = safe_json_loads(identifier_json)
 
         identity = identifier_json.get("identity_markers", {})
 
@@ -705,7 +713,7 @@ OUTPUT RULES
     # Normalize rare uppercase NULL
     raw_output = re.sub(r'\bNULL\b', 'null', raw_output)
 
-    identifier = json.loads(raw_output)
+    identifier = safe_json_loads(raw_output)
 
     return identifier
 

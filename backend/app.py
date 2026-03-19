@@ -1,3 +1,11 @@
+
+import json
+def safe_json_loads(data):
+    if isinstance(data, (dict, list)): return data
+    if isinstance(data, str):
+        try: return safe_json_loads(data)
+        except: return None
+    return data
 import streamlit as st
 import os
 import re
@@ -583,7 +591,7 @@ if uploaded_file:
             # st.success("LLM Transactions Extracted")
             # if isinstance(transactions_json, str):
             #     try:
-            #         transactions_json = json.loads(transactions_json)
+            #         transactions_json = safe_json_loads(transactions_json)
             #     except:
             #         st.error("Failed to parse LLM transactions JSON")
             #         st.text(transactions_json)
@@ -653,7 +661,7 @@ if uploaded_file:
             # st.success("LLM Transactions Extracted")
             # if isinstance(transactions_json, str):
             #     try:
-            #         transactions_json = json.loads(transactions_json)
+            #         transactions_json = safe_json_loads(transactions_json)
             #     except:
             #         st.error("Failed to parse LLM transactions JSON")
             #         st.text(transactions_json)

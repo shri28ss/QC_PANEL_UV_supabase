@@ -1,3 +1,11 @@
+
+import json
+def safe_json_loads(data):
+    if isinstance(data, (dict, list)): return data
+    if isinstance(data, str):
+        try: return safe_json_loads(data)
+        except: return None
+    return data
 import json
 from db.connection import get_connection, get_cursor, execute_insert
 
@@ -19,8 +27,8 @@ def get_active_statement_categories():
     conn.close()
 
     for row in rows:
-        row["statement_identifier"] = json.loads(row["statement_identifier"])
-        row["extraction_logic"] = json.loads(row["extraction_logic"])
+        row["statement_identifier"] = safe_json_loads(row["statement_identifier"])
+        row["extraction_logic"] = safe_json_loads(row["extraction_logic"])
 
     return rows
 
@@ -105,7 +113,7 @@ def get_under_review_formats():
     conn.close()
 
     for row in rows:
-        row["statement_identifier"] = json.loads(row["statement_identifier"])
+        row["statement_identifier"] = safe_json_loads(row["statement_identifier"])
         if row.get("extraction_logic") is None:
             row["extraction_logic"] = ""
 

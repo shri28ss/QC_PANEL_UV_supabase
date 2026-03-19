@@ -1,3 +1,11 @@
+
+import json
+def safe_json_loads(data):
+    if isinstance(data, (dict, list)): return data
+    if isinstance(data, str):
+        try: return safe_json_loads(data)
+        except: return None
+    return data
 #imports
 import json
 import random
@@ -81,7 +89,7 @@ def _get_stored_transactions(document_id, parser_type):
     conn.close()
 
     if row and row["transaction_json"]:
-        return json.loads(row["transaction_json"])
+        return safe_json_loads(row["transaction_json"])
     return None
 
 
@@ -281,7 +289,7 @@ def run_random_qc(sample_size=1):
             # 3d. If no LLM transactions → call LLM parser and save them
             if not llm_txns:
                 logger.info(f"  No LLM transactions found for doc {doc_id}. Calling LLM parser...")
-                identifier_json = json.loads(identifier_json_str) if isinstance(identifier_json_str, str) else identifier_json_str
+                identifier_json = safe_json_loads(identifier_json_str) if isinstance(identifier_json_str, str) else identifier_json_str
                 llm_response = parse_with_llm(pdf_text, identifier_json)
                 llm_txns = extract_json_from_response(llm_response)
                 

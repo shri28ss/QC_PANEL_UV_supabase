@@ -1,3 +1,11 @@
+
+import json
+def safe_json_loads(data):
+    if isinstance(data, (dict, list)): return data
+    if isinstance(data, str):
+        try: return safe_json_loads(data)
+        except: return None
+    return data
 import json
 import re
 from difflib import SequenceMatcher
@@ -27,7 +35,7 @@ def extract_json_from_response(response_text):
     match = re.search(r"\[.*\]", response_text, re.DOTALL)
     if match:
         try:
-            return json.loads(match.group(0))
+            return safe_json_loads(match.group(0))
         except:
             return []
     return []

@@ -1,3 +1,11 @@
+
+import json
+def safe_json_loads(data):
+    if isinstance(data, (dict, list)): return data
+    if isinstance(data, str):
+        try: return safe_json_loads(data)
+        except: return None
+    return data
 import json
 import getpass
 from services.pdf_service import extract_pages
@@ -250,8 +258,8 @@ import getpass
 #     conn.close()
 
 #     for row in rows:
-#         row["statement_identifier"] = json.loads(row["statement_identifier"])
-#         row["extraction_logic"] = json.loads(row["extraction_logic"])
+#         row["statement_identifier"] = safe_json_loads(row["statement_identifier"])
+#         row["extraction_logic"] = safe_json_loads(row["extraction_logic"])
 
 #     return rows
 
@@ -472,8 +480,8 @@ import getpass
 #     conn.close()
 
 #     for row in rows:
-#         row["statement_identifier"] = json.loads(row["statement_identifier"])
-#         row["extraction_logic"] = json.loads(row["extraction_logic"])
+#         row["statement_identifier"] = safe_json_loads(row["statement_identifier"])
+#         row["extraction_logic"] = safe_json_loads(row["extraction_logic"])
 
 #     return rows
 
@@ -659,7 +667,7 @@ def get_formats_by_bank_code(bank_code: str):
     # Deserialize JSON fields
     for row in rows:
         if isinstance(row["statement_identifier"], str):
-            row["statement_identifier"] = json.loads(row["statement_identifier"])
+            row["statement_identifier"] = safe_json_loads(row["statement_identifier"])
 
     return rows
 

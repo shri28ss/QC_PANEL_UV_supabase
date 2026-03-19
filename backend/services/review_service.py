@@ -1,3 +1,11 @@
+
+import json
+def safe_json_loads(data):
+    if isinstance(data, (dict, list)): return data
+    if isinstance(data, str):
+        try: return safe_json_loads(data)
+        except: return None
+    return data
 import re
 import json
 from typing import List, Dict
@@ -131,7 +139,7 @@ def run_review_engine(statement_id: int, document_id,pdf_path: str, full_text: s
 
     identifier_json = stmt["statement_identifier"]
     if isinstance(identifier_json, str):
-        identifier_json = json.loads(identifier_json)
+        identifier_json = safe_json_loads(identifier_json)
 
     llm_response = parse_with_llm(full_text, identifier_json)
     llm_txns = extract_json_from_response(llm_response)

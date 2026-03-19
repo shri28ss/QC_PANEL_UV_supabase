@@ -1,3 +1,11 @@
+
+import json
+def safe_json_loads(data):
+    if isinstance(data, (dict, list)): return data
+    if isinstance(data, str):
+        try: return safe_json_loads(data)
+        except: return None
+    return data
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -117,8 +125,8 @@ def get_document_logic(document_id: int):
     cursor.close()
     conn.close()
     
-    code_txns = json.loads(code_row["transaction_json"]) if code_row and code_row["transaction_json"] else []
-    llm_txns = json.loads(llm_row["transaction_json"]) if llm_row and llm_row["transaction_json"] else []
+    code_txns = safe_json_loads(code_row["transaction_json"]) if code_row and code_row["transaction_json"] else []
+    llm_txns = safe_json_loads(llm_row["transaction_json"]) if llm_row and llm_row["transaction_json"] else []
 
     reconciliation = reconcile_transactions(code_txns, llm_txns)
     
@@ -226,12 +234,12 @@ def improve_code(document_id: int, req: ImproveCodeRequest):
     # Get CODE transactions
     cursor.execute("SELECT transaction_json FROM ai_transactions_staging WHERE document_id = %s AND parser_type = 'CODE' ORDER BY created_at DESC LIMIT 1", (document_id,))
     code_row = cursor.fetchone()
-    code_txns = json.loads(code_row["transaction_json"]) if code_row and code_row["transaction_json"] else []
+    code_txns = safe_json_loads(code_row["transaction_json"]) if code_row and code_row["transaction_json"] else []
 
     # Get LLM transactions
     cursor.execute("SELECT transaction_json FROM ai_transactions_staging WHERE document_id = %s AND parser_type = 'LLM' ORDER BY created_at DESC LIMIT 1", (document_id,))
     llm_row = cursor.fetchone()
-    llm_txns = json.loads(llm_row["transaction_json"]) if llm_row and llm_row["transaction_json"] else []
+    llm_txns = safe_json_loads(llm_row["transaction_json"]) if llm_row and llm_row["transaction_json"] else []
 
     # Get PDF text
     cursor.execute("SELECT extracted_text FROM document_text_extractions WHERE document_id = %s ORDER BY created_at DESC LIMIT 1", (document_id,))
@@ -315,7 +323,7 @@ def run_improved_code(document_id: int, req: RunImprovedCodeRequest):
     # Get LLM transactions for comparison
     cursor.execute("SELECT transaction_json FROM ai_transactions_staging WHERE document_id = %s AND parser_type = 'LLM' ORDER BY created_at DESC LIMIT 1", (document_id,))
     llm_row = cursor.fetchone()
-    llm_txns = json.loads(llm_row["transaction_json"]) if llm_row and llm_row["transaction_json"] else []
+    llm_txns = safe_json_loads(llm_row["transaction_json"]) if llm_row and llm_row["transaction_json"] else []
 
     cursor.close()
     conn.close()
@@ -522,7 +530,7 @@ def override_and_improve(document_id: int):
         conn.close()
         return {"error": "No CODE transactions found to set as baseline."}
 
-    code_txns = json.loads(code_row["transaction_json"])
+    code_txns = safe_json_loads(code_row["transaction_json"])
 
     # Insert CODE as new LLM baseline
     cursor.execute("""
@@ -539,7 +547,7 @@ def override_and_improve(document_id: int):
         ORDER BY created_at DESC LIMIT 1 OFFSET 1
     """, (document_id,))
     old_llm_row = cursor.fetchone()
-    old_llm_txns = json.loads(old_llm_row["transaction_json"]) if old_llm_row and old_llm_row["transaction_json"] else code_txns
+    old_llm_txns = safe_json_loads(old_llm_row["transaction_json"]) if old_llm_row and old_llm_row["transaction_json"] else code_txns
 
     # ── Step 4: Gather ALL override patterns for this statement format ──
     cursor.execute("""
@@ -694,7 +702,7 @@ def run_llm_extraction(document_id: int):
     # Get Code transactions for reconciliation
     cursor.execute("SELECT transaction_json FROM ai_transactions_staging WHERE document_id = %s AND parser_type = 'CODE' ORDER BY created_at DESC LIMIT 1", (document_id,))
     code_row = cursor.fetchone()
-    code_txns = json.loads(code_row["transaction_json"]) if code_row and code_row["transaction_json"] else []
+    code_txns = safe_json_loads(code_row["transaction_json"]) if code_row and code_row["transaction_json"] else []
 
     cursor.close()
     conn.close()
@@ -708,7 +716,7 @@ def run_llm_extraction(document_id: int):
 
     # 2. Call LLM
     try:
-        identifier_json = json.loads(doc_row["statement_identifier"]) if isinstance(doc_row["statement_identifier"], str) else doc_row["statement_identifier"]
+        identifier_json = safe_json_loads(doc_row["statement_identifier"]) if isinstance(doc_row["statement_identifier"], str) else doc_row["statement_identifier"]
         llm_response = parse_with_llm(pdf_text, identifier_json)
         llm_transactions = extract_json_from_response(llm_response)
     except Exception as e:
@@ -809,9 +817,9 @@ def get_random_qc_detail(qc_id: int):
         return {"error": "QC result not found"}
 
     # Parse JSON fields
-    row["reconciliation_json"] = json.loads(row["reconciliation_json"]) if row["reconciliation_json"] else {}
-    row["code_txn_json"] = json.loads(row["code_txn_json"]) if row["code_txn_json"] else []
-    row["llm_txn_json"] = json.loads(row["llm_txn_json"]) if row["llm_txn_json"] else []
+    row["reconciliation_json"] = safe_json_loads(row["reconciliation_json"]) if row["reconciliation_json"] else {}
+    row["code_txn_json"] = safe_json_loads(row["code_txn_json"]) if row["code_txn_json"] else []
+    row["llm_txn_json"] = safe_json_loads(row["llm_txn_json"]) if row["llm_txn_json"] else []
 
     return row
 
@@ -955,7 +963,7 @@ def get_frequent_overrides():
         txns: list = []
         if isinstance(row["transaction_json"], str):
             try:
-                txns = json.loads(row["transaction_json"])
+                txns = safe_json_loads(row["transaction_json"])
             except Exception:
                 pass
         elif isinstance(row["transaction_json"], list):
