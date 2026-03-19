@@ -115,12 +115,19 @@ export default function RandomDocuments() {
         try {
             const [detailRes, pdfRes] = await Promise.all([
                 axios.get(`https://qc-panel-uv-supabase-1.onrender.com/api/random-qc-detail/${qcId}`),
-                axios.get(`https://qc-panel-uv-supabase-1.onrender.com/api/document-pdf/${docId}`, { responseType: 'blob' })
+                axios.get(`https://qc-panel-uv-supabase-1.onrender.com/api/document-pdf/${docId}`, { 
+                    responseType: 'blob',
+                    validateStatus: (s) => s < 500
+                })
             ]);
 
             setDetailData(detailRes.data);
-            const blob = new Blob([pdfRes.data], { type: 'application/pdf' });
-            setPdfBlobUrl(URL.createObjectURL(blob));
+            if (pdfRes.status === 200) {
+                const blob = new Blob([pdfRes.data], { type: 'application/pdf' });
+                setPdfBlobUrl(URL.createObjectURL(blob));
+            } else {
+                setPdfBlobUrl(null);
+            }
         } catch (error) {
             console.error('Error fetching QC detail / PDF:', error);
         } finally {
