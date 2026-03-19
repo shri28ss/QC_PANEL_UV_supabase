@@ -1,6 +1,6 @@
 # document_repo.py
 
-from db import get_connection
+from db.connection import get_connection, get_cursor, execute_insert
 from typing import List, Dict, Optional
 
 
@@ -16,15 +16,15 @@ def create_document(
 ) -> int:
 
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = get_cursor(conn)
 
-    cursor.execute("""
+    query = """
         INSERT INTO documents
         (user_id, file_name, file_path, is_password_protected, status)
         VALUES (%s, %s, %s, %s, 'UPLOADED')
-    """, (user_id, file_name, file_path, is_password_protected))
-
-    document_id = cursor.lastrowid
+    """
+    document_id = execute_insert(conn, cursor, query, (user_id, file_name, file_path, is_password_protected))
+    
     conn.commit()
     cursor.close()
     conn.close()
@@ -134,7 +134,7 @@ def insert_statement_transactions(
 ):
 
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = get_cursor(conn)
 
     for txn in transactions:
         cursor.execute("""
@@ -160,7 +160,7 @@ def insert_statement_transactions(
 
 def get_document_by_id(document_id: int):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
 
     cursor.execute("""
         SELECT *

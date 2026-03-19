@@ -1,6 +1,6 @@
 import streamlit as st
 import tempfile
-from db.connection import get_connection
+from db.connection import get_connection, get_cursor, execute_insert
 from services.processing_engine import process_document
  
 def show_upload():
@@ -17,20 +17,19 @@ def show_upload():
             file_path = tmp.name
  
         conn = get_connection()
-        cursor = conn.cursor()
+        cursor = get_cursor(conn)
  
-        cursor.execute("""
+        query = """
             INSERT INTO documents
             (user_id, file_name, file_path, is_password_protected, status)
             VALUES (%s, %s, %s, %s, 'UPLOADED')
-        """, (
+        """
+        document_id = execute_insert(conn, cursor, query, (
             st.session_state.user_id,
             uploaded_file.name,
             file_path,
             bool(password)
         ))
- 
-        document_id = cursor.lastrowid
  
         if password:
             cursor.execute("""

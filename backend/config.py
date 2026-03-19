@@ -1,8 +1,9 @@
+import os
+from dotenv import load_dotenv
 
-DB_CONFIG = {
-    "host": "127.0.0.1",
-    "user": "root",
-    "password": "Root@123",
-    "database": "ledgerai_db"
-}
+load_dotenv()
 
+# Supabase PostgreSQL configuration
+SUPABASE_DB_URL = os.getenv("SUPABASE_DB_URL")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")

@@ -4,7 +4,7 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from db.connection import get_connection
+from db.connection import get_connection, get_cursor
 from fastapi.responses import FileResponse, JSONResponse
 import uvicorn
 import pikepdf
@@ -46,7 +46,7 @@ app.add_middleware(
 def _get_document_password(document_id: int):
     """Fetch the stored password for a document from the document_password table."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = get_cursor(conn)
     cursor.execute("""
         SELECT encrypted_password
         FROM document_password
@@ -60,7 +60,7 @@ def _get_document_password(document_id: int):
 @app.get("/api/review-documents")
 def get_under_review_documents():
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     
     # Query to join documents, statement_categories and latest QC results
     query = """
@@ -94,7 +94,7 @@ def get_document_logic(document_id: int):
     import json
 
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     
     # 1. Get extraction logic
     query_logic = """
@@ -134,7 +134,7 @@ def get_document_logic(document_id: int):
 @app.get("/api/document-pdf/{document_id}")
 def get_document_pdf(document_id: int):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     cursor.execute("SELECT file_path, file_name FROM documents WHERE document_id = %s", (document_id,))
     doc = cursor.fetchone()
     cursor.close()
@@ -204,7 +204,7 @@ def improve_code(document_id: int, req: ImproveCodeRequest):
     import json
 
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
 
     # 1. Initialize variables
     current_code = ""
@@ -244,7 +244,7 @@ def improve_code(document_id: int, req: ImproveCodeRequest):
     # If no PDF text, try extracting from file
     if not pdf_text:
         conn2 = get_connection()
-        cursor2 = conn2.cursor(dictionary=True)
+        cursor2 = get_cursor(conn2)
         cursor2.execute("SELECT file_path FROM documents WHERE document_id = %s", (document_id,))
         doc = cursor2.fetchone()
         cursor2.close()
@@ -255,7 +255,7 @@ def improve_code(document_id: int, req: ImproveCodeRequest):
 
     # --- Fetch systemic override patterns for this format ---
     conn_p = get_connection()
-    cursor_p = conn_p.cursor(dictionary=True)
+    cursor_p = get_cursor(conn_p)
     cursor_p.execute("""
         SELECT 
             o.field_name,
@@ -305,7 +305,7 @@ def run_improved_code(document_id: int, req: RunImprovedCodeRequest):
     import json
 
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
 
     # Get PDF text
     cursor.execute("SELECT extracted_text FROM document_text_extractions WHERE document_id = %s ORDER BY created_at DESC LIMIT 1", (document_id,))
@@ -323,7 +323,7 @@ def run_improved_code(document_id: int, req: RunImprovedCodeRequest):
     # If no PDF text, try extracting from file
     if not pdf_text:
         conn2 = get_connection()
-        cursor2 = conn2.cursor(dictionary=True)
+        cursor2 = get_cursor(conn2)
         cursor2.execute("SELECT file_path FROM documents WHERE document_id = %s", (document_id,))
         doc = cursor2.fetchone()
         cursor2.close()
@@ -360,7 +360,7 @@ def save_improved_code(document_id: int, req: SaveImprovedCodeRequest):
     import json
 
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
 
     # Find the statement_id for this document
     cursor.execute("""
@@ -406,7 +406,7 @@ def save_improved_code(document_id: int, req: SaveImprovedCodeRequest):
     try:
         # Get PDF text
         conn2 = get_connection()
-        cursor2 = conn2.cursor(dictionary=True)
+        cursor2 = get_cursor(conn2)
         cursor2.execute("""
             SELECT extracted_text FROM document_text_extractions
             WHERE document_id = %s ORDER BY created_at DESC LIMIT 1
@@ -434,7 +434,7 @@ def save_improved_code(document_id: int, req: SaveImprovedCodeRequest):
             if new_transactions:
                 # Update the CODE transactions in ai_transactions_staging
                 conn3 = get_connection()
-                cursor3 = conn3.cursor(dictionary=True)
+                cursor3 = get_cursor(conn3)
                 # Get user_id
                 cursor3.execute("SELECT user_id FROM documents WHERE document_id = %s", (document_id,))
                 uid_row = cursor3.fetchone()
@@ -488,7 +488,7 @@ def override_and_improve(document_id: int):
     import json
 
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
 
     # ── Step 1: Get document info and statement_id ──
     cursor.execute("""
@@ -670,7 +670,7 @@ def run_llm_extraction(document_id: int):
     import json
 
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
 
     # 1. Get PDF text
     cursor.execute("SELECT extracted_text FROM document_text_extractions WHERE document_id = %s ORDER BY created_at DESC LIMIT 1", (document_id,))
@@ -719,7 +719,7 @@ def run_llm_extraction(document_id: int):
 
     # 3. Save to DB
     conn2 = get_connection()
-    cursor2 = conn2.cursor(dictionary=True)
+    cursor2 = get_cursor(conn2)
     # Get user_id
     cursor2.execute("SELECT user_id FROM documents WHERE document_id = %s", (document_id,))
     uid_row = cursor2.fetchone()
@@ -755,7 +755,7 @@ def get_random_qc_results():
     """Get all QC results for the dashboard table."""
     import json
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     cursor.execute("""
         SELECT qc_id, document_id, statement_id, file_name, institution_name,
                code_txn_count, llm_txn_count, matched_count,
@@ -774,7 +774,7 @@ def get_random_qc_results():
 def get_random_qc_summary():
     """Get summary cards data for the dashboard."""
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     cursor.execute("""
         SELECT 
             COUNT(*) as total_checked,
@@ -797,7 +797,7 @@ def get_random_qc_detail(qc_id: int):
     """Get full detail for one QC result (for the detail/view page)."""
     import json
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     cursor.execute("""
         SELECT * FROM random_qc_results WHERE qc_id = %s
     """, (qc_id,))
@@ -820,7 +820,7 @@ def get_random_qc_detail(qc_id: int):
 def submit_qc_review(qc_id: int, review: dict):
     """Submit a QC review (mark as reviewed/flagged, add notes)."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = get_cursor(conn)
     cursor.execute("""
         UPDATE random_qc_results
         SET qc_status = %s,
@@ -851,7 +851,7 @@ def get_frequent_overrides_summary():
     """Summary of transaction overrides with heat map & bank ranking data."""
     import json as _json
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     
     # Basic totals
     cursor.execute("""
@@ -912,7 +912,7 @@ def get_frequent_overrides():
     """List documents with overrides, sorted by most changes. Includes before/after transactions."""
     import json
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     
     query = """
         SELECT 
@@ -1003,7 +1003,7 @@ def get_frequent_overrides():
 def generate_llm_report():
     """Generates an LLM prompt improvement report based on frequent overrides."""
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     
     cursor.execute("""
         SELECT field_name, ai_value, user_value, COUNT(*) as occorrences

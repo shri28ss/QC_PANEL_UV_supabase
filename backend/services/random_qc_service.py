@@ -2,7 +2,7 @@
 import json
 import random
 import logging
-from db.connection import get_connection
+from db.connection import get_connection, get_cursor
 from services.reconciliation_service import reconcile_transactions
 from services.llm_parser import parse_with_llm
 from services.validation_service import extract_json_from_response
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def _get_active_documents():
     """Fetch all documents that have an ACTIVE format status and haven't been REVIEWED already."""
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     cursor.execute("""
         SELECT 
             d.document_id,
@@ -43,7 +43,7 @@ def _get_active_documents():
 def _get_pdf_text(document_id):
     """Get PDF text for a document from DB cache."""
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     
     cursor.execute("""
         SELECT extracted_text 
@@ -69,7 +69,7 @@ def _get_stored_transactions(document_id, parser_type):
     Returns a Python list of transaction dicts, or None if not found.
     """
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     cursor.execute("""
         SELECT transaction_json
         FROM ai_transactions_staging
@@ -93,7 +93,7 @@ def _save_llm_transactions(document_id, statement_id, llm_txns):
     """
     # Get user_id from the document
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     cursor.execute("SELECT user_id FROM documents WHERE document_id = %s", (document_id,))
     doc_row = cursor.fetchone()
     user_id = doc_row["user_id"] if doc_row else 1
@@ -210,7 +210,7 @@ def run_random_qc(sample_size=1):
                     logger.info(f"  No cached PDF text. Extracting directly from file: {file_path}")
                     # Check for password
                     conn2 = get_connection()
-                    cursor2 = conn2.cursor(dictionary=True)
+                    cursor2 = get_cursor(conn2)
                     cursor2.execute("SELECT encrypted_password FROM document_password WHERE document_id = %s", (doc_id,))
                     pwd_row = cursor2.fetchone()
                     cursor2.close()
@@ -259,7 +259,7 @@ def run_random_qc(sample_size=1):
             if used_fresh:
                 try:
                     conn_sync = get_connection()
-                    cursor_sync = conn_sync.cursor(dictionary=True)
+                    cursor_sync = get_cursor(conn_sync)
                     cursor_sync.execute("SELECT user_id FROM documents WHERE document_id = %s", (doc_id,))
                     uid_row = cursor_sync.fetchone()
                     uid = uid_row["user_id"] if uid_row else 1

@@ -19,7 +19,7 @@ from services.extraction_service import (
     generate_extraction_logic_llm,
     extract_transactions_using_logic
 )
-from db.connection import get_connection
+from db.connection import get_connection, get_cursor, execute_insert
 
 
 
@@ -219,7 +219,7 @@ def hash_password(password: str):
  
 def create_session(user_id):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True, buffered=True)
+    cursor = get_cursor(conn)
     token = str(uuid.uuid4())
     expires_at = datetime.datetime.now() + datetime.timedelta(hours=12)
  
@@ -236,7 +236,7 @@ def create_session(user_id):
 
 def update_document_status(document_id, new_status):
     conn = get_connection()
-    cursor = conn.cursor(buffered=True)
+    cursor = get_cursor(conn)
 
     cursor.execute(
         "UPDATE documents SET status=%s WHERE document_id=%s",
@@ -441,7 +441,7 @@ if st.session_state.user_id is None:
         if st.button(" Sign In", use_container_width=True, key="login_btn"):
 
             conn = get_connection()
-            cursor = conn.cursor(dictionary=True, buffered=True)
+            cursor = get_cursor(conn)
 
             cursor.execute(
                 "SELECT * FROM users WHERE email=%s AND status='ACTIVE'",
@@ -511,17 +511,17 @@ if uploaded_file:
         tmp.write(uploaded_file.read())
         file_path = tmp.name
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True, buffered=True)
-    cursor.execute("""
+    cursor = get_cursor(conn)
+    insert_query = """
                    INSERT INTO documents (user_id, file_name, file_path, is_password_protected, status)
                    VALUES (%s, %s, %s, %s, 'UPLOADED')
-                """, (
+                """
+    document_id = execute_insert(conn, cursor, insert_query, (
                     st.session_state.user_id,
-                    uploaded_file.name,file_path,
+                    uploaded_file.name, file_path,
                     bool(password)
     ))
  
-    document_id = cursor.lastrowid
     if password:
         cursor.execute("""
         INSERT INTO document_password (document_id, encrypted_password)

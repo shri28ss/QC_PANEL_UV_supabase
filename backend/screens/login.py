@@ -1,5 +1,5 @@
 import streamlit as st
-from db.connection import get_connection
+from db.connection import get_connection, get_cursor
 import hashlib
  
 def hash_password(password):
@@ -14,7 +14,7 @@ def show_login():
     if st.button("Login"):
  
         conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = get_cursor(conn)
  
         cursor.execute(
             "SELECT * FROM users WHERE email=%s AND status='ACTIVE'",

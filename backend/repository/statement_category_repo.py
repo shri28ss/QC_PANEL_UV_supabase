@@ -1,10 +1,10 @@
 import json
-from db.connection import get_connection
+from db.connection import get_connection, get_cursor, execute_insert
 
 # ================================= Fetch All Active Categories =================================
 def get_active_statement_categories():
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True, buffered=True)
+    cursor = get_cursor(conn)
 
     query = """
         SELECT *
@@ -36,7 +36,7 @@ def insert_statement_category(
     threshold=65.00
 ):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
     cursor.execute("""
         SELECT statement_id
         FROM statement_categories
@@ -66,7 +66,9 @@ def insert_statement_category(
         VALUES (%s, %s, %s, %s, %s, %s,%s, 1, 'UNDER_REVIEW')
     """
 
-    cursor.execute(
+    inserted_id = execute_insert(
+        conn,
+        cursor,
         query,
         (
             statement_type,
@@ -80,8 +82,6 @@ def insert_statement_category(
     )
 
     conn.commit()
-    inserted_id = cursor.lastrowid
-
     cursor.close()
     conn.close()
 
@@ -90,7 +90,7 @@ def insert_statement_category(
 #============================== Fetch All Under Review Categories ==============================
 def get_under_review_formats():
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True, buffered=True)
+    cursor = get_cursor(conn)
 
     query = """
         SELECT *
@@ -114,7 +114,7 @@ def get_under_review_formats():
 # ============================== Activate Category After Validation ==============================
 def activate_statement_category(statement_id):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = get_cursor(conn)
 
     query = """
         UPDATE statement_categories
@@ -130,7 +130,7 @@ def activate_statement_category(statement_id):
 
 def get_statement_by_id(statement_id):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True, buffered=True)
+    cursor = get_cursor(conn)
 
     query = """
         SELECT * FROM statement_categories
@@ -148,7 +148,7 @@ def get_statement_by_id(statement_id):
 
 def update_extraction_logic(statement_id, new_logic):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = get_cursor(conn)
 
     query = """
         UPDATE statement_categories

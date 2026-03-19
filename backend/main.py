@@ -233,7 +233,7 @@ import getpass
 # # ---------------------------------------------------
 # def get_formats_by_ifsc(ifsc_code: str):
 #     conn = get_connection()
-#     cursor = conn.cursor(dictionary=True)
+#     cursor = get_cursor(conn)
 
 #     query = """
 #         SELECT *
@@ -261,7 +261,7 @@ import getpass
 # # ---------------------------------------------------
 # def get_next_version_for_ifsc(ifsc_code: str):
 #     conn = get_connection()
-#     cursor = conn.cursor(dictionary=True)
+#     cursor = get_cursor(conn)
 
 #     query = """
 #         SELECT format_name
@@ -455,7 +455,7 @@ import getpass
 # # ---------------------------------------------------
 # def get_formats_by_bank_code(bank_code: str):
 #     conn = get_connection()
-#     cursor = conn.cursor(dictionary=True)
+#     cursor = get_cursor(conn)
 
 #     query = """
 #         SELECT *
@@ -633,7 +633,7 @@ from services.extraction_service import (
     extract_transactions_using_logic
 )
 from repository.statement_category_repo import insert_statement_category
-from db.connection import get_connection
+from db.connection import get_connection, get_cursor
 from services.pdf_service import extract_pages
 
 # ---------------------------------------------------
@@ -641,7 +641,7 @@ from services.pdf_service import extract_pages
 # ---------------------------------------------------
 def get_formats_by_bank_code(bank_code: str):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
 
     query = """
         SELECT *

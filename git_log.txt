@@ -1,0 +1,258 @@
+﻿
+commit 033987b5cef9391505365c89a4290acda1131c85
+Author: SHRIDHAN <shrishindess28@gmail.com>
+Date:   Tue Mar 17 11:45:56 2026 +0530
+
+    Add .env to .gitignore to prevent accidental keys leak
+
+A	.gitignore
+
+commit 09c5352db79cdd24166727ddc97b39be6d9144aa
+Author: SHRIDHAN <shrishindess28@gmail.com>
+Date:   Tue Mar 17 11:42:19 2026 +0530
+
+    Update README with .env setup instructions
+
+M	README.md
+
+commit 22893a9dfdda0d038e887bc29aa1dec4ed49df46
+Author: SHRIDHAN <shrishindess28@gmail.com>
+Date:   Tue Mar 17 11:38:38 2026 +0530
+
+    Add dotenv initialization to boot sequence
+
+M	backend/backend.py
+
+commit 63287b5c962535aa3a5fc2db88918bb9b7341b3f
+Author: SHRIDHAN <shrishindess28@gmail.com>
+Date:   Tue Mar 17 11:34:09 2026 +0530
+
+    Remove hardcoded Gemini API keys and replace with env 
+variables
+
+M	backend/services/code_improvement_service.py
+M	backend/services/identifier_service.py
+M	backend/services/llm_parser.py
+
+commit ea95129d80589ed78fbcc2bd11ef5829f5ba3f0f
+Author: SHRIDHAN <shrishindess28@gmail.com>
+Date:   Tue Mar 17 11:20:05 2026 +0530
+
+    Fix force save button visibility bug, correct accuracy 
+reading logic, fix QC accuracy thresholds to 98%, delete FLAGGED 
+results on save
+
+M	backend/backend.py
+M	backend/services/__pycache__/code_improvement_service.cpython-31
+3.pyc
+M	backend/services/__pycache__/llm_parser.cpython-313.pyc
+M	backend/services/__pycache__/random_qc_service.cpython-313.pyc
+M	backend/services/__pycache__/reconciliation_service.cpython-313.
+pyc
+M	backend/services/code_improvement_service.py
+M	backend/services/identifier_service.py
+M	backend/services/llm_parser.py
+M	backend/services/random_qc_service.py
+M	backend/services/reconciliation_service.py
+M	frontend/src/pages/ReviewDocument.tsx
+
+commit af02ce5cb121c9f5488e8b2b461d68b4b3aeef38
+Author: SHRIDHAN <shrishindess28@gmail.com>
+Date:   Mon Mar 16 01:22:43 2026 +0530
+
+    Update README to accurately reflect the 3 core frontend 
+functionalities
+
+M	README.md
+
+commit 7592698f8b124800e71365fc7b38edd5023fc6fe
+Author: SHRIDHAN <shrishindess28@gmail.com>
+Date:   Mon Mar 16 01:03:53 2026 +0530
+
+    Add start.bat and start.sh, simplify README.md
+
+M	README.md
+A	backend/requirements.txt
+D	frontend/README.md
+A	start.bat
+A	start.sh
+
+commit 24f127b39d305f02111c6a2e5400542a7be391d5
+Author: SHRIDHAN <shrishindess28@gmail.com>
+Date:   Mon Mar 16 00:38:25 2026 +0530
+
+    first commit
+
+A	.vscode/settings.json
+A	README.md
+M	__pycache__/config.cpython-313.pyc
+D	app.py
+A	backend/.pyre_configuration
+A	backend/.vscode/settings.json
+A	backend/__pycache__/backend.cpython-313.pyc
+A	backend/__pycache__/config.cpython-312.pyc
+A	backend/__pycache__/config.cpython-313.pyc
+A	backend/__pycache__/test_active.cpython-313-pytest-8.3.4.pyc
+A	backend/__pycache__/test_api_key.cpython-313-pytest-8.3.4.pyc
+A	backend/__pycache__/test_codegen.cpython-313-pytest-8.3.4.pyc
+A	backend/__pycache__/test_mysql_conn.cpython-313-pytest-8.3.4.pyc
+A	backend/__pycache__/test_quota.cpython-313-pytest-8.3.4.pyc
+A	backend/__pycache__/test_quota_v2.cpython-313-pytest-8.3.4.pyc
+A	backend/app.py
+A	backend/backend.py
+A	backend/config.py
+R100	db/__init__.py	backend/db/__init__.py
+A	backend/db/__pycache__/__init__.cpython-312.pyc
+A	backend/db/__pycache__/__init__.cpython-313.pyc
+A	backend/db/__pycache__/connection.cpython-312.pyc
+A	backend/db/__pycache__/connection.cpython-313.pyc
+A	backend/db/connection.py
+A	backend/db/full_schema.sql
+R100	generated_extraction_logic.py	
+backend/generated_extraction_logic.py
+R098	main.py	backend/main.py
+R100	repository/__init__.py	backend/models.json
+R100	services/__init__.py	backend/repository/__init__.py
+A	backend/repository/__pycache__/__init__.cpython-313.pyc
+A	backend/repository/__pycache__/document_repo.cpython-313.pyc
+A	backend/repository/__pycache__/statement_category_repo.cpython-3
+13.pyc
+R100	repository/document_repo.py	
+backend/repository/document_repo.py
+A	backend/repository/statement_category_repo.py
+A	backend/screens/login.py
+A	backend/screens/processing.py
+A	backend/screens/register.py
+A	backend/screens/review.py
+A	backend/screens/upload.py
+A	backend/services/__init__.py
+A	backend/services/__pycache__/__init__.cpython-312.pyc
+A	backend/services/__pycache__/__init__.cpython-313.pyc
+R100	services/__pycache__/auth_service.cpython-313.pyc	
+backend/services/__pycache__/auth_service.cpython-313.pyc
+A	backend/services/__pycache__/code_improvement_service.cpython-31
+2.pyc
+A	backend/services/__pycache__/code_improvement_service.cpython-31
+3-pytest-8.3.4.pyc
+A	backend/services/__pycache__/code_improvement_service.cpython-31
+3.pyc
+R100	services/__pycache__/document_service.cpython-313.pyc	
+backend/services/__pycache__/document_service.cpython-313.pyc
+A	backend/services/__pycache__/extraction_service.cpython-312.pyc
+A	backend/services/__pycache__/extraction_service.cpython-313.pyc
+A	backend/services/__pycache__/identifier_service.cpython-313.pyc
+A	backend/services/__pycache__/llm_parser.cpython-312.pyc
+A	backend/services/__pycache__/llm_parser.cpython-313.pyc
+A	backend/services/__pycache__/pdf_service.cpython-312.pyc
+A	backend/services/__pycache__/pdf_service.cpython-313.pyc
+A	backend/services/__pycache__/random_qc_service.cpython-312.pyc
+A	backend/services/__pycache__/random_qc_service.cpython-313.pyc
+A	backend/services/__pycache__/reconciliation_service.cpython-312.
+pyc
+A	backend/services/__pycache__/reconciliation_service.cpython-313.
+pyc
+R100	services/__pycache__/review_service.cpython-313.pyc	
+backend/services/__pycache__/review_service.cpython-313.pyc
+A	backend/services/__pycache__/scheduler_service.cpython-312.pyc
+A	backend/services/__pycache__/scheduler_service.cpython-313.pyc
+A	backend/services/__pycache__/validation_service.cpython-312.pyc
+R089	services/__pycache__/validation_service.cpython-313.pyc	
+backend/services/__pycache__/validation_service.cpython-313.pyc
+A	backend/services/account_match_service
+R095	services/auth_service.py	backend/services/auth_service.py
+A	backend/services/code_improvement_service.py
+R051	services/document_service.py	
+backend/services/document_service.py
+R100	services/executor.py	backend/services/executor.py
+A	backend/services/extraction_service.py
+R052	services/identifier_service.py	
+backend/services/identifier_service.py
+A	backend/services/llm_parser.py
+R065	services/pdf_service.py	backend/services/pdf_service.py
+A	backend/services/processing_engine
+A	backend/services/random_qc_service.py
+A	backend/services/reconciliation_service.py
+R092	services/review_service.py	backend/services/review_service.py
+A	backend/services/scheduler_service.py
+R100	services/validation_service.py	
+backend/services/validation_service.py
+R100	statement_pdf/11707454011-JUL-25221947.PDF	
+backend/statement_pdf/11707454011-JUL-25221947.PDF
+R100	statement_pdf/11707454025-NOV-25389675 1.PDF	
+backend/statement_pdf/11707454025-NOV-25389675 1.PDF
+R100	
+statement_pdf/AccountStatement_01-DEC-2025_to_05-DEC-2025.pdf	back
+end/statement_pdf/AccountStatement_01-DEC-2025_to_05-DEC-2025.pdf
+R100	statement_pdf/Acct_Statement_XXXXXXXX8323_24012026.pdf	
+backend/statement_pdf/Acct_Statement_XXXXXXXX8323_24012026.pdf
+R100	statement_pdf/Akshata_Dhanyakumar_Patil_30112025_182828759 
+1.pdf	backend/statement_pdf/Akshata_Dhanyakumar_Patil_30112025_182
+828759 1.pdf
+R100	statement_pdf/FEDRAL.pdf	backend/statement_pdf/FEDRAL.pdf
+R100	statement_pdf/HDFC.pdf	backend/statement_pdf/HDFC.pdf
+R100	statement_pdf/SBI.pdf	backend/statement_pdf/SBI.pdf
+R100	statement_pdf/Statement_1769686745340 1.PDF	
+backend/statement_pdf/Statement_1769686745340 1.PDF
+R100	statement_pdf/Statement_1769776495968 (1).pdf	
+backend/statement_pdf/Statement_1769776495968 (1).pdf
+R100	statement_pdf/Yes-BANK-STATEMENT.pdf	
+backend/statement_pdf/Yes-BANK-STATEMENT.pdf
+A	backend/streamlit/config.toml
+D	config.py
+D	db/__pycache__/__init__.cpython-313.pyc
+D	db/__pycache__/connection.cpython-313.pyc
+D	db/connection.py
+D	db/ledger_db.sql
+A	frontend/.gitignore
+A	frontend/QC-SOP.md
+A	frontend/README.md
+A	frontend/eslint.config.js
+A	frontend/index.html
+A	frontend/package-lock.json
+A	frontend/package.json
+A	frontend/public/vite.svg
+A	frontend/src/App.css
+A	frontend/src/App.tsx
+A	frontend/src/assets/react.svg
+A	frontend/src/components/NavBar.tsx
+A	frontend/src/index.css
+A	frontend/src/main.tsx
+A	frontend/src/pages/FrequentTransactions.tsx
+A	frontend/src/pages/RandomDocuments.tsx
+A	frontend/src/pages/ReviewDocument.tsx
+A	frontend/task-breakdown.xlsx
+A	frontend/tsconfig.app.json
+A	frontend/tsconfig.json
+A	frontend/tsconfig.node.json
+A	frontend/vite.config.ts
+D	repository/__pycache__/__init__.cpython-313.pyc
+D	repository/__pycache__/document_repo.cpython-313.pyc
+D	repository/__pycache__/statement_category_repo.cpython-313.pyc
+D	repository/statement_category_repo.py
+D	requirements.txt
+D	services/__pycache__/__init__.cpython-313.pyc
+D	services/__pycache__/extraction_service.cpython-313.pyc
+D	services/__pycache__/identifier_service.cpython-313.pyc
+D	services/__pycache__/llm_parser.cpython-313.pyc
+D	services/__pycache__/pdf_service.cpython-313.pyc
+D	services/extraction_service.py
+D	services/llm_parser.py
+
+commit 597ee14d3487e1b7618c119b9e440270b4322b01
+Author: Muskan Shaikh <muskanshaikh5857@gmail.com>
+Date:   Mon Feb 23 22:57:44 2026 +0530
+
+    Added updated llm parser
+
+M	services/llm_parser.py
+
+commit 2ba14f54e864c0f56cbdabe67f9dc6acda842879
+Author: Muskan Shaikh <muskanshaikh5857@gmail.com>
+Date:   Mon Feb 23 22:56:01 2026 +0530
+
+    Added updated identifier service
+
+M	app.py
+M	services/identifier_service.py
+
+

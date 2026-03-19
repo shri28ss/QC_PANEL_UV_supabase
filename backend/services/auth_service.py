@@ -1,7 +1,7 @@
 import bcrypt
 import uuid
 from datetime import datetime, timedelta
-from db.connection import get_connection
+from db.connection import get_connection, get_cursor, execute_insert
 
 
 # =====================================================
@@ -9,7 +9,7 @@ from db.connection import get_connection
 # =====================================================
 def register_user(email: str, password: str):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True, buffered=True)
+    cursor = get_cursor(conn)
 
     # Hash password
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
@@ -19,10 +19,8 @@ def register_user(email: str, password: str):
         VALUES (%s, %s)
     """
 
-    cursor.execute(query, (email, password_hash))
+    user_id = execute_insert(conn, cursor, query, (email, password_hash))
     conn.commit()
-
-    user_id = cursor.lastrowid
 
     cursor.close()
     conn.close()
@@ -35,7 +33,7 @@ def register_user(email: str, password: str):
 # =====================================================
 def login_user(email: str, password: str):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
 
     query = """
         SELECT * FROM users
@@ -79,7 +77,7 @@ def login_user(email: str, password: str):
 # =====================================================
 def validate_session(token: str):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = get_cursor(conn)
 
     query = """
         SELECT * FROM user_sessions
@@ -100,7 +98,7 @@ def validate_session(token: str):
 # =====================================================
 def logout_user(token: str):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True, buffered=True)
+    cursor = get_cursor(conn)
 
     cursor.execute(
         "DELETE FROM user_sessions WHERE token = %s",
