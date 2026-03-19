@@ -7,6 +7,7 @@ improved extraction function.
 """
 import json
 import ast
+import os
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
