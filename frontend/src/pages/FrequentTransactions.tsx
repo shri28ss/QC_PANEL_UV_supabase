@@ -77,8 +77,8 @@ export default function FrequentTransactions() {
         setLoading(true);
         try {
             const [summaryRes, overridesRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/frequent-overrides-summary'),
-                axios.get('http://localhost:8000/api/frequent-overrides')
+                axios.get('https://qc-panel-uv-supabase-1.onrender.com/api/frequent-overrides-summary'),
+                axios.get('https://qc-panel-uv-supabase-1.onrender.com/api/frequent-overrides')
             ]);
             setSummary(summaryRes.data);
             setDocumentData(overridesRes.data);
@@ -91,7 +91,7 @@ export default function FrequentTransactions() {
     const handleGenerateReport = async () => {
         setGeneratingReport(true); setReportText(null);
         try {
-            const res = await axios.post('http://localhost:8000/api/generate-llm-report');
+            const res = await axios.post('https://qc-panel-uv-supabase-1.onrender.com/api/generate-llm-report');
             setReportText(res.data.report_text);
         } catch (error) {
             console.error(error);

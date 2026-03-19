@@ -67,8 +67,8 @@ export default function RandomDocuments() {
         setLoading(true);
         try {
             const [summaryRes, resultsRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/random-qc-summary'),
-                axios.get('http://localhost:8000/api/random-qc-results')
+                axios.get('https://qc-panel-uv-supabase-1.onrender.com/api/random-qc-summary'),
+                axios.get('https://qc-panel-uv-supabase-1.onrender.com/api/random-qc-results')
             ]);
             setSummary(summaryRes.data);
             setResults(resultsRes.data);
@@ -86,7 +86,7 @@ export default function RandomDocuments() {
     const handleTriggerQc = async () => {
         setTriggering(true);
         try {
-            const res = await axios.post('http://localhost:8000/api/random-qc-trigger');
+            const res = await axios.post('https://qc-panel-uv-supabase-1.onrender.com/api/random-qc-trigger');
             alert(`Triggered! Checked ${res.data.checked} documents.`);
             fetchData();
         } catch (error) {
@@ -114,8 +114,8 @@ export default function RandomDocuments() {
 
         try {
             const [detailRes, pdfRes] = await Promise.all([
-                axios.get(`http://localhost:8000/api/random-qc-detail/${qcId}`),
-                axios.get(`http://localhost:8000/api/document-pdf/${docId}`, { responseType: 'blob' })
+                axios.get(`https://qc-panel-uv-supabase-1.onrender.com/api/random-qc-detail/${qcId}`),
+                axios.get(`https://qc-panel-uv-supabase-1.onrender.com/api/document-pdf/${docId}`, { responseType: 'blob' })
             ]);
 
             setDetailData(detailRes.data);
@@ -131,7 +131,7 @@ export default function RandomDocuments() {
     const handleReviewSubmit = async (status: string) => {
         if (!selectedQcId) return;
         try {
-            await axios.post(`http://localhost:8000/api/random-qc-review/${selectedQcId}`, {
+            await axios.post(`https://qc-panel-uv-supabase-1.onrender.com/api/random-qc-review/${selectedQcId}`, {
                 qc_status: status,
                 reviewer_notes: "Reviewed from Dashboard",
             });

@@ -81,7 +81,7 @@ export default function ReviewDocument() {
         const fetchDocuments = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('http://localhost:8000/api/review-documents');
+                const response = await axios.get('https://qc-panel-uv-supabase-1.onrender.com/api/review-documents');
                 setDocuments(response.data);
                 setError(null);
             } catch (err) {
@@ -111,8 +111,8 @@ export default function ReviewDocument() {
         try {
             // Fetch logic data and PDF blob in parallel
             const [logicRes, pdfRes] = await Promise.all([
-                axios.get(`http://localhost:8000/api/document-logic/${docId}`),
-                axios.get(`http://localhost:8000/api/document-pdf/${docId}`, {
+                axios.get(`https://qc-panel-uv-supabase-1.onrender.com/api/document-logic/${docId}`),
+                axios.get(`https://qc-panel-uv-supabase-1.onrender.com/api/document-pdf/${docId}`, {
                     responseType: 'blob',
                     validateStatus: (s) => s < 500, // don't throw on 404
                 })
@@ -221,7 +221,7 @@ export default function ReviewDocument() {
                 }
             });
 
-            const response = await axios.post(`http://localhost:8000/api/improve-code/${selectedDocId}`, {
+            const response = await axios.post(`https://qc-panel-uv-supabase-1.onrender.com/api/improve-code/${selectedDocId}`, {
                 reconciliation: logicData.reconciliation,
                 remarks: enrichedRemarks,
                 accepted_ids: Array.from(acceptedTxns),
@@ -252,7 +252,7 @@ export default function ReviewDocument() {
         setIsRunning(true);
         setRunResult(null);
         try {
-            const response = await axios.post(`http://localhost:8000/api/run-improved-code/${selectedDocId}`, {
+            const response = await axios.post(`https://qc-panel-uv-supabase-1.onrender.com/api/run-improved-code/${selectedDocId}`, {
                 improved_code: improvedCode,
             });
             setRunResult(response.data);
@@ -269,7 +269,7 @@ export default function ReviewDocument() {
         if (!selectedDocId) return;
         setIsRunningLLM(true);
         try {
-            const response = await axios.post(`http://localhost:8000/api/run-llm/${selectedDocId}`);
+            const response = await axios.post(`https://qc-panel-uv-supabase-1.onrender.com/api/run-llm/${selectedDocId}`);
             if (response.data.success) {
                 setLogicData(prev => prev ? {
                     ...prev,
@@ -292,7 +292,7 @@ export default function ReviewDocument() {
         setIsSaving(true);
         setSaveStatus('idle');
         try {
-            await axios.post(`http://localhost:8000/api/save-improved-code/${selectedDocId}`, {
+            await axios.post(`https://qc-panel-uv-supabase-1.onrender.com/api/save-improved-code/${selectedDocId}`, {
                 improved_code: improvedCode,
                 overwrite_llm: overwriteLlm,
                 accuracy: overwriteLlm ? 100 : (runResult?.reconciliation?.overall_similarity || null),
@@ -300,7 +300,7 @@ export default function ReviewDocument() {
             setSaveStatus('saved');
 
             // Re-fetch the full document logic so all panels refresh with new transactions
-            const logicRes = await axios.get(`http://localhost:8000/api/document-logic/${selectedDocId}`);
+            const logicRes = await axios.get(`https://qc-panel-uv-supabase-1.onrender.com/api/document-logic/${selectedDocId}`);
             setLogicData(logicRes.data);
 
             // Update the format_status, accuracy, and QC flag in the local documents list
@@ -324,7 +324,7 @@ export default function ReviewDocument() {
         setIsForceSaving(true);
         setForceSaveStatus('idle');
         try {
-            await axios.post(`http://localhost:8000/api/save-improved-code/${selectedDocId}`, {
+            await axios.post(`https://qc-panel-uv-supabase-1.onrender.com/api/save-improved-code/${selectedDocId}`, {
                 improved_code: improvedCode,
                 overwrite_llm: false,
                 accuracy: runResult?.reconciliation?.overall_similarity ?? null,
@@ -333,7 +333,7 @@ export default function ReviewDocument() {
             setSaveStatus('saved'); // Also mark normal save as done to prevent double save
 
             // Re-fetch the full document logic so all panels refresh with new transactions
-            const logicRes = await axios.get(`http://localhost:8000/api/document-logic/${selectedDocId}`);
+            const logicRes = await axios.get(`https://qc-panel-uv-supabase-1.onrender.com/api/document-logic/${selectedDocId}`);
             setLogicData(logicRes.data);
 
             // Update the format_status, accuracy, and QC flag in the local documents list
