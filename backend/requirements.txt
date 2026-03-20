@@ -11,3 +11,4 @@ requests
 ollama
 RapidFuzz
 python-multipart
+supabase

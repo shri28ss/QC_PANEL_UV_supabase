@@ -141,31 +141,40 @@ def get_document_logic(document_id: int):
 
 @app.get("/api/document-pdf/{document_id}")
 def get_document_pdf(document_id: int):
+    from services.storage_service import get_pdf_local_path
+
     conn = get_connection()
     cursor = get_cursor(conn)
     cursor.execute("SELECT file_path, file_name FROM documents WHERE document_id = %s", (document_id,))
     doc = cursor.fetchone()
     cursor.close()
     conn.close()
-    
-    if not doc or not doc['file_path'] or not os.path.exists(doc['file_path']):
-        missing_path = doc['file_path'] if doc and doc['file_path'] else "unknown"
+
+    if not doc or not doc['file_path']:
         return JSONResponse(
             status_code=404,
-            content={"error": f"PDF file not found on disk: {missing_path}"}
+            content={"error": "Document not found or file_path is missing"}
         )
-    
-    file_path = doc['file_path']
+
+    # Get local path (downloads from Supabase if needed)
+    local_path = get_pdf_local_path(doc['file_path'])
+
+    if not local_path:
+        return JSONResponse(
+            status_code=404,
+            content={"error": f"PDF file not accessible: {doc['file_path']}"}
+        )
+
     # Guard: file_name might accidentally have a full path stored — use only the basename
-    file_name = os.path.basename(doc['file_name']) if doc['file_name'] else os.path.basename(file_path)
-    
+    file_name = os.path.basename(doc['file_name']) if doc['file_name'] else os.path.basename(doc['file_path'])
+
     # Try to get the password from document_password table
     password = _get_document_password(document_id)
-    
+
     if password:
         # Decrypt the PDF and serve the decrypted version
         try:
-            pdf = pikepdf.open(file_path, password=password)
+            pdf = pikepdf.open(local_path, password=password)
             # Save decrypted PDF to a temp file
             temp_dir = tempfile.gettempdir()
             decrypted_path = os.path.join(temp_dir, f"decrypted_{document_id}_{file_name}")
@@ -180,13 +189,13 @@ def get_document_pdf(document_id: int):
             print(f"Error decrypting PDF {document_id}: {e}")
             # Fallback: serve original file
             return FileResponse(
-                path=file_path,
+                path=local_path,
                 media_type='application/pdf',
                 content_disposition_type='inline'
             )
-    
+
     return FileResponse(
-        path=file_path,
+        path=local_path,
         media_type='application/pdf',
         content_disposition_type='inline'
     )
@@ -257,7 +266,7 @@ def improve_code(document_id: int, req: ImproveCodeRequest):
         doc = cursor2.fetchone()
         cursor2.close()
         conn2.close()
-        if doc and doc["file_path"] and os.path.exists(doc["file_path"]):
+        if doc and doc["file_path"]:
             password = _get_document_password(document_id)
             pdf_text = extract_full_text(doc["file_path"], password)
 
@@ -336,7 +345,7 @@ def run_improved_code(document_id: int, req: RunImprovedCodeRequest):
         doc = cursor2.fetchone()
         cursor2.close()
         conn2.close()
-        if doc and doc["file_path"] and os.path.exists(doc["file_path"]):
+        if doc and doc["file_path"]:
             password = _get_document_password(document_id)
             pdf_text = extract_full_text(doc["file_path"], password)
 
@@ -428,7 +437,7 @@ def save_improved_code(document_id: int, req: SaveImprovedCodeRequest):
             doc_row = cursor2.fetchone()
             cursor2.close()
             conn2.close()
-            if doc_row and doc_row["file_path"] and os.path.exists(doc_row["file_path"]):
+            if doc_row and doc_row["file_path"]:
                 password = _get_document_password(document_id)
                 pdf_text = extract_full_text(doc_row["file_path"], password)
         else:
@@ -589,7 +598,7 @@ def override_and_improve(document_id: int):
     conn.close()
 
     # If no cached text, extract from file
-    if not pdf_text and doc_info.get("file_path") and os.path.exists(doc_info["file_path"]):
+    if not pdf_text and doc_info.get("file_path"):
         password = _get_document_password(document_id)
         pdf_text = extract_full_text(doc_info["file_path"], password)
 
