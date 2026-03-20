@@ -208,7 +208,7 @@ CONCRETE EXAMPLES — HOW EACH TARGET TRANSACTION MAPS TO A RAW PDF LINE:
 *** IMPORTANT TEXT FORMAT HINT ***:
 - The PDF TEXT below is PLAIN TEXT with space characters between fields.
 - DO NOT assume the text is pipe-separated (`|`) or tab-separated unless you literally see those characters in the raw text below.
-- Most tables in this text use multiple spaces (e.g., `  `) to separate columns. Use regex or `re.split(r'\s{2,}', line)` for multi-column parsing.
+- Most tables in this text use multiple spaces (e.g., `  `) to separate columns. Use regex or `re.split(r'\\s{2,}', line)` for multi-column parsing.
 
 CRITICAL: The current code logic is failing on the rows marked MISMATCH or CODE MISSED THIS.
 You MUST MODIFY the code to handle these edge cases. You are allowed to:
@@ -233,7 +233,7 @@ GUIDELINES FOR YOUR NEW CODE:
    - In extracted PDF text, EACH TRANSACTION LINE has exactly 2 monetary values at the end: the AMOUNT and the CLOSING BALANCE.
    - The Withdrawal and Deposit columns from the PDF merge into a single Amount because one is always blank.
    - DO NOT use separate optional regex groups for Withdrawal and Deposit — this ALWAYS fails because regex greedily assigns the only number to whichever group comes first.
-   - CORRECT APPROACH: Use `re.findall(r'[\d,]+\.\d{2}', line)` to get all numbers. The last number is Balance, second-to-last is the Amount.
+   - CORRECT APPROACH: Use `re.findall(r'[\\d,]+\\.\\d{2}', line)` to get all numbers. The last number is Balance, second-to-last is the Amount.
    - Then use a running `previous_balance` variable:
      * If `current_balance > previous_balance`, the Amount is a CREDIT (deposit).
      * If `current_balance < previous_balance`, the Amount is a DEBIT (withdrawal).
