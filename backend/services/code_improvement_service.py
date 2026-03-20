@@ -199,6 +199,17 @@ CONCRETE EXAMPLES — HOW EACH TARGET TRANSACTION MAPS TO A RAW PDF LINE:
 (Find these dates/amounts in the PDF TEXT above to understand the exact pattern)
 {_build_examples_block(llm_transactions, pdf_text)}
 
+*** CRITICAL: DO NOT HARDCODE DATA ***:
+- NEVER hardcode specific narration strings, dates, or amounts from the "LLM Target" rows or the "QC REMARK" into the code.
+- DO NOT create lists of "known" narrations to check against (e.g., `hardcoded_multi_narrations = []`).
+- YOUR CODE MUST BE GENERIC. It must identify transactions based on the structural recurring patterns (dates, table columns, monetary formats) found in the PDF TEXT.
+- If the current code extracted 0 transactions, analyze the PDF TEXT to understand why the existing Regex or table-start logic is failing. Look for lines that look like transaction rows and adjust your `re.search` or `split` logic.
+
+*** IMPORTANT TEXT FORMAT HINT ***:
+- The PDF TEXT below is PLAIN TEXT with space characters between fields.
+- DO NOT assume the text is pipe-separated (`|`) or tab-separated unless you literally see those characters in the raw text below.
+- Most tables in this text use multiple spaces (e.g., `  `) to separate columns. Use regex or `re.split(r'\s{2,}', line)` for multi-column parsing.
+
 CRITICAL: The current code logic is failing on the rows marked MISMATCH or CODE MISSED THIS.
 You MUST MODIFY the code to handle these edge cases. You are allowed to:
 - Change the regex patterns.
@@ -241,6 +252,7 @@ MANDATORY OUTPUT RULES:
 5. DO NOT wrap the code in markdown (No ```python blocks). Just output the raw text of the python function.
 6. The function MUST return the `transactions` list. The VERY LAST LINE must be: `    return transactions`
 7. Be CONCISE. Prefer short variable names and compact logic. Do NOT repeat yourself. Avoid redundant checks.
+8. NEVER hardcode specific transaction details. Use REGEX patterns to match the PDF structure.
 
 REWRITE THE CODE NOW TO FIX THE MISMATCHES:
 """
