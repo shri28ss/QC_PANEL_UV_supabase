@@ -63,7 +63,7 @@ def _get_document_password(document_id: int):
     result = cursor.fetchone()
     cursor.close()
     conn.close()
-    return result[0] if result else None
+    return result['encrypted_password'] if result else None
 
 @app.get("/api/review-documents")
 def get_under_review_documents():
