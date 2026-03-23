@@ -63,6 +63,7 @@ export default function ReviewDocument() {
     const [logicData, setLogicData] = useState<DocumentLogicData | null>(null);
     const [isFetchingLogic, setIsFetchingLogic] = useState(false);
     const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+    const [pdfError, setPdfError] = useState<string | null>(null);
 
     // Code improvement state
     const [originalCode, setOriginalCode] = useState<string>('');
@@ -103,6 +104,7 @@ export default function ReviewDocument() {
         setIsFetchingLogic(true);
 
         // Revoke old blob URL to free memory
+        setPdfError(null);
         if (pdfBlobUrl) {
             URL.revokeObjectURL(pdfBlobUrl);
             setPdfBlobUrl(null);
@@ -126,14 +128,15 @@ export default function ReviewDocument() {
                 const url = URL.createObjectURL(blob);
                 setPdfBlobUrl(url);
             } else {
-                // PDF file missing on disk — read the JSON error from blob
+                // PDF not accessible — set error state (no blocking popup)
                 const text = await (pdfRes.data as Blob).text();
                 try {
                     const errData = JSON.parse(text);
-                    console.error('PDF not found:', errData.error);
-                    alert(`PDF not found on server:\n${errData.error}\n\nThe transaction data is still available above.`);
+                    console.warn('PDF not accessible:', errData.error);
+                    setPdfError(errData.error || 'PDF file not found in storage.');
                 } catch {
-                    console.error('PDF fetch failed with status', pdfRes.status);
+                    console.warn('PDF fetch failed with status', pdfRes.status);
+                    setPdfError('PDF file could not be loaded (HTTP ' + pdfRes.status + ').');
                 }
                 setPdfBlobUrl(null);
             }
@@ -1182,9 +1185,36 @@ export default function ReviewDocument() {
                                                     src={pdfBlobUrl}
                                                     title="PDF Preview"
                                                 />
+                                            ) : pdfError ? (
+                                                <div style={{
+                                                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                                    justifyContent: 'center', height: '100%', gap: '0.75rem',
+                                                    padding: '1.5rem', textAlign: 'center',
+                                                }}>
+                                                    <FileText size={36} color="#94a3b8" />
+                                                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>
+                                                        PDF not available
+                                                    </span>
+                                                    <span style={{
+                                                        fontSize: '0.7rem', color: '#94a3b8',
+                                                        background: '#f1f5f9', borderRadius: '6px',
+                                                        padding: '0.4rem 0.75rem', maxWidth: '100%',
+                                                        wordBreak: 'break-all',
+                                                    }}>
+                                                        {pdfError}
+                                                    </span>
+                                                    <span style={{ fontSize: '0.65rem', color: '#10b981' }}>
+                                                        Transaction data is still available →
+                                                    </span>
+                                                </div>
+                                            ) : isFetchingLogic ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '0.5rem', opacity: 0.5 }}>
+                                                    <Loader2 className="animate-spin" size={20} />
+                                                    <span style={{ fontSize: '0.8rem' }}>Loading PDF...</span>
+                                                </div>
                                             ) : (
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.5, fontSize: '0.85rem' }}>
-                                                    Loading PDF...
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.4, fontSize: '0.8rem' }}>
+                                                    Select a document to preview
                                                 </div>
                                             )}
                                         </div>

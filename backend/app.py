@@ -515,8 +515,10 @@ if uploaded_file:
  
     password = st.text_input("Enter PDF Password (if any)", type="password")
  
+    file_bytes = uploaded_file.read()
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-        tmp.write(uploaded_file.read())
+        tmp.write(file_bytes)
         file_path = tmp.name
     conn = get_connection()
     cursor = get_cursor(conn)
@@ -535,6 +537,18 @@ if uploaded_file:
         INSERT INTO document_password (document_id, encrypted_password)
         VALUES (%s, %s)
         """, (document_id, password))
+    
+    # Upload to Supabase Storage financial_document_uploads bucket
+    from services.upload_helper import upload_pdf_to_supabase
+    storage_path = upload_pdf_to_supabase(
+        file_bytes=file_bytes,
+        user_id=str(st.session_state.user_id),
+        original_filename=uploaded_file.name,
+        document_id=document_id
+    )
+    
+    cursor.execute("UPDATE documents SET file_path=%s WHERE document_id=%s", (storage_path, document_id))
+    
     conn.commit()
     cursor.close()
     conn.close()

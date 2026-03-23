@@ -27,7 +27,7 @@ def show_upload():
         document_id = execute_insert(conn, cursor, query, (
             st.session_state.user_id,
             uploaded_file.name,
-            file_path,
+            "pending_upload",
             bool(password)
         ))
  
@@ -37,6 +37,21 @@ def show_upload():
                 VALUES (%s, %s)
             """, (document_id, password))
  
+        # Upload to Supabase Storage
+        from services.upload_helper import upload_pdf_to_supabase
+        with open(file_path, "rb") as f:
+            file_bytes = f.read()
+            
+        storage_path = upload_pdf_to_supabase(
+            file_bytes=file_bytes,
+            user_id=str(st.session_state.user_id),
+            original_filename=uploaded_file.name,
+            document_id=document_id
+        )
+        
+        # Update the path in the DB
+        cursor.execute("UPDATE documents SET file_path=%s WHERE document_id=%s", (storage_path, document_id))
+
         conn.commit()
         cursor.close()
         conn.close()
